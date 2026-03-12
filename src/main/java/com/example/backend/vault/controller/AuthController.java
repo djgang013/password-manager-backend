@@ -1,5 +1,7 @@
 package com.example.backend.vault.controller;
 
+import com.example.backend.vault.dto.LoginRequest;
+import com.example.backend.vault.dto.LoginResponse;
 import com.example.backend.vault.dto.RegisterRequest;
 import com.example.backend.vault.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -17,5 +19,13 @@ public class AuthController {
         authService.register(request);
 
         return ResponseEntity.ok(java.util.Map.of("message", "User registered successfully"));
+    }
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request){
+        return  ResponseEntity.ok(authService.login(request));
+    }
+    @GetMapping("/salt/{username}")
+    public ResponseEntity<com.example.backend.vault.dto.SaltResponse> getSalt(@PathVariable String username){
+      return ResponseEntity.ok(authService.getSalt(username));
     }
 }
