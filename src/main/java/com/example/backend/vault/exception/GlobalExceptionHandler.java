@@ -11,6 +11,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, String>> handleRuntimeException(RuntimeException ex) {
         // This turns your 500 crash into a graceful 400 Bad Request
+        String errorMessage = ex.getMessage() != null ? ex.getMessage() : "An unexpected error occurred";
         return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
     }
 }
