@@ -4,11 +4,7 @@ A highly secure, full-stack password manager built with **Angular**, **Spring Bo
 
 Vault is designed with a strict **Zero-Knowledge Architecture**. The backend server, database, and database administrators never see your plain-text passwords. All encryption and decryption happen strictly in the client's browser using the native Web Crypto API.
 
-## 📸 Interface Preview
 
-![Vault Dashboard](./screenshots/vault.png)
-<br>
-![Login Screen](./screenshots/login.png)
 
 ## 🔗 Project Repositories
 This project is separated into a microservice architecture:
