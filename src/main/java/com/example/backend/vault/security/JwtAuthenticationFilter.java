@@ -18,32 +18,45 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
   private final JwtUtil jwtUtil;
-  @Override
+    @Override
     protected void doFilterInternal(
-          @NonNull HttpServletRequest request,
-          @NonNull HttpServletResponse response,
-          @NonNull FilterChain filterChain
-          )throws ServletException, IOException{
-      final String authHeader =request.getHeader("Authorization");
-      final String jwt;
-      final String username;
-      if (authHeader ==null || !authHeader.startsWith("Bearer")) {
-          filterChain.doFilter(request,response);
-          return;
-      }
-      jwt =authHeader.substring(7);
-      username = jwtUtil.extractUsername(jwt);
-      if(jwtUtil.isTokenValid(jwt, username)){
-          UsernamePasswordAuthenticationToken authToken =new UsernamePasswordAuthenticationToken(
-                  username,
-                  null,
-                  null
-          );
-          authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-          SecurityContextHolder.getContext().setAuthentication(authToken);
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain
+    ) throws ServletException, IOException {
 
-      }
+        final String authHeader = request.getHeader("Authorization");
+        final String jwt;
+        final String username;
 
-  filterChain.doFilter(request, response);
+        // 1. Check if the request has a Bearer token
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-}}
+        jwt = authHeader.substring(7);
+
+        try {
+            // 2. Try to extract the username (this crashes if the token is expired)
+            username = jwtUtil.extractUsername(jwt);
+
+            // 3. If valid, authenticate the user
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                if (jwtUtil.isTokenValid(jwt, username)) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            username, null, null
+                    );
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
+            }
+        } catch (Exception e) {
+            // IF TOKEN IS EXPIRED OR INVALID: Catch the crash!
+            // We do nothing and let the request continue as "unauthenticated".
+            System.out.println("JWT Parsing failed: " + e.getMessage());
+        }
+
+        // Continue the filter chain
+        filterChain.doFilter(request, response);
+    }}
